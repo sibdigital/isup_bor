@@ -22,7 +22,7 @@ const ngrok = require('./get_public_url');
 
 var all_users = ngrok.users;
 var request = require('request');
-//var sync_request = require('sync-request');
+var sync_request = require('sync-request');
 
 function createLogger() {
     const logger = new winston.Logger({
@@ -106,6 +106,10 @@ function near(project_id, message, response){
         if (err) {
             return console.log(err);
         }
+        if (body._type == 'error') {
+            let msg = new TextMessage('Произошла какая-то ошибка... Попробуйте еще раз');
+            response.send(msg);
+        }
 
         //console.log(body);
         logger.log(body);
@@ -142,6 +146,10 @@ function prosr(project_id, message, response){
     request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
         if (err) {
             return console.log(err);
+        }
+        if (body._type == 'error') {
+            let msg = new TextMessage('Произошла какая-то ошибка... Попробуйте еще раз');
+            response.send(msg);
         }
 
         //console.log(body);
@@ -182,28 +190,28 @@ function main_menu(message, response){
         for (var p in projects) {
             var bgColor = '#228B22';
 
-            // let res = sync_request('GET', head_url + apikey + '@' + projects_url + '/' + projects[p].id + '/' + wp_url, {json: true});
-            // let result = JSON.parse(res.getBody('utf8'));
-            //
-            //
-            // let wps = result._embedded.elements;
-            // var text = '';
-            // for (var w in wps) {
-            //     let due_date = new Date(wps[w].dueDate);
-            //     let now = new Date(Date.now());
-            //     const diffTime = Math.abs(due_date.getTime() - now.getTime());
-            //     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            //     if (due_date < Date.now()) {
-            //         bgColor = '#DC143C';
-            //         break;
-            //     }
-            //     if (diffDays <= 14) {
-            //         bgColor = '#FFA500';
-            //         break;
-            //     }
-            // }
+            let res = sync_request('GET', head_url + apikey + '@' + projects_url + '/' + projects[p].id + '/' + wp_url, {json: true});
+            let result = JSON.parse(res.getBody('utf8'));
 
-            buttons.push(build_button(projects[p].name, VIEW_PROJECT, bgColor));
+
+            let wps = result._embedded.elements;
+            var text = '';
+            for (var w in wps) {
+                let due_date = new Date(wps[w].dueDate);
+                let now = new Date(Date.now());
+                const diffTime = Math.abs(due_date.getTime() - now.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (due_date < Date.now()) {
+                    bgColor = '#DC143C';
+                    break;
+                }
+                if (diffDays <= 14) {
+                    bgColor = '#FFA500';
+                    break;
+                }
+            }
+
+            buttons.push(build_button(projects[p].name, VIEW_PROJECT + ',' + projects[p].id, bgColor));
             logger.log(projects[p].name + ' ' + bgColor);
         }
 
