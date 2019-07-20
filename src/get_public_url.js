@@ -32,3 +32,5 @@ module.exports.getPublicUrl = function() {
 
     });
 }
+
+module.exports.users = new Set();
