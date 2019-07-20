@@ -30,7 +30,7 @@ request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) 
             //console.log(body);
             let wps = body._embedded.elements;
             for(var w in wps) {
-                console.log(wps[w].subject);
+                console.log(wps[w].subject + '  ' + wps[w]._links.assignee.title);
             }
         });
     }
