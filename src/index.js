@@ -84,76 +84,10 @@ bot.onTextMessage(/./, (message, response) => {
                 response.send(msg);
             } else if (splitted[0] === WP_PROSR) {
                 let project_id = splitted[1];
-
-                request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
-                    if (err) {
-                        return console.log(err);
-                    }
-                    var text = '';
-                    //console.log(body);
-                    let wps = body._embedded.elements;
-
-                    for (var w in wps) {
-                        let due_date = new Date(wps[w].dueDate);
-                        if (due_date < Date.now()) {
-                            text += "\ud83d\udd34"
-                                + " " + wps[w].subject + ' Просрочено \n'
-                                + " Ответственный: " + wps[w]._links.assignee.title + '\n'
-                                + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
-                        }
-                    }
-                    if (isEmpty(text)) {
-                        text = '\u2705' + 'Просроченные КТ и мероприятия отсутствуют';
-                    }
-
-                    var buttons = [];
-                    buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
-                    buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
-                    buttons.push(build_button('Главное меню', ''));
-                    var keyboard = build_keyboard(buttons);
-
-                    let msg = new TextMessage(text, keyboard);
-                    response.send(msg);
-                });
-
+                prosr(project_id, message, response);
             } else if (splitted[0] === WP_NEAR) {
                 let project_id = splitted[1];
-
-                request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
-                    if (err) {
-                        return console.log(err);
-                    }
-                    var text = '';
-                    //console.log(body);
-                    logger.log(body);
-                    let wps = body._embedded.elements;
-
-                    for (var w in wps) {
-                        let due_date = new Date(wps[w].dueDate);
-                        let now = new Date(Date.now());
-                        const diffTime = Math.abs(due_date.getTime() - now.getTime());
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        if (diffDays <= 14) {
-                            text += "\u23f3"
-                                + " " + wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
-                                + " Ответственный: " + wps[w]._links.assignee.title + '\n'
-                                + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
-                        }
-                    }
-                    if (isEmpty(text)) {
-                        text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
-                    }
-
-
-                    var buttons = [];
-                    buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
-                    buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
-                    buttons.push(build_button('Главное меню', ''));
-                    var keyboard = build_keyboard(buttons);
-
-                    let msg = new TextMessage(text, keyboard);
-                    response.send(msg);
-                });
+                near(project_id, message, response);
             } else {
                 logger.log('request projects');
                 main_menu(message, response);
@@ -166,6 +100,76 @@ bot.onTextMessage(/./, (message, response) => {
         logger.debug(e);
     }
 });
+
+function near(project_id, message, response){
+    request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
+        if (err) {
+            return console.log(err);
+        }
+        var text = '';
+        //console.log(body);
+        logger.log(body);
+        let wps = body._embedded.elements;
+
+        for (var w in wps) {
+            let due_date = new Date(wps[w].dueDate);
+            let now = new Date(Date.now());
+            const diffTime = Math.abs(due_date.getTime() - now.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays <= 14) {
+                text += "\u23f3"
+                    + " " + wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
+                    + " Ответственный: " + wps[w]._links.assignee.title + '\n'
+                    + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
+            }
+        }
+        if (isEmpty(text)) {
+            text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
+        }
+
+        var buttons = [];
+        buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
+        buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
+        buttons.push(build_button('Главное меню', ''));
+        var keyboard = build_keyboard(buttons);
+
+        let msg = new TextMessage(text, keyboard);
+        response.send(msg);
+    });
+}
+
+function prosr(project_id, message, response){
+    request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
+        if (err) {
+            return console.log(err);
+        }
+        var text = '';
+        //console.log(body);
+        let wps = body._embedded.elements;
+
+        for (var w in wps) {
+            let due_date = new Date(wps[w].dueDate);
+            if (due_date < Date.now()) {
+                text += "\ud83d\udd34"
+                    + " " + wps[w].subject + ' Просрочено \n'
+                    + " Ответственный: " + wps[w]._links.assignee.title + '\n'
+                    + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
+            }
+        }
+        if (isEmpty(text)) {
+            text = '\u2705' + 'Просроченные КТ и мероприятия отсутствуют';
+        }
+
+        var buttons = [];
+        buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
+        buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
+        buttons.push(build_button('Главное меню', ''));
+        var keyboard = build_keyboard(buttons);
+
+        let msg = new TextMessage(text, keyboard);
+        response.send(msg);
+    });
+}
 
 function main_menu(message, response){
     request(head_url + apikey + '@' + projects_url, {json: true}, (err, res, body) => {
