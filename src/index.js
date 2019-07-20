@@ -11,6 +11,7 @@ const head_url = 'https://apikey:';
 const wp_url = 'work_packages';
 
 const VIEW_PROJECT = 'VIEW_PROJECT';
+const MAIN = 'MAIN';
 const WP_PROSR = 'WP_PROSR';
 const WP_NEAR = 'WP_NEAR';
 
@@ -77,7 +78,7 @@ bot.onTextMessage(/./, (message, response) => {
                 var buttons = [];
                 buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
                 buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
-                buttons.push(build_button('Главное меню', ''));
+                buttons.push(build_button('Главное меню', 'MAIN'));
                 var keyboard = build_keyboard(buttons);
 
                 let msg = new TextMessage("Информация по мероприятиям и КТ", keyboard);
@@ -88,6 +89,9 @@ bot.onTextMessage(/./, (message, response) => {
             } else if (splitted[0] === WP_NEAR) {
                 let project_id = splitted[1];
                 near(project_id, message, response);
+            } else if (splitted[0] === MAIN) {
+                logger.log('request projects');
+                main_menu(message, response);
             } else {
                 logger.log('request projects');
                 main_menu(message, response);
@@ -134,7 +138,7 @@ function near(project_id, message, response){
         var buttons = [];
         buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
         buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
-        buttons.push(build_button('Главное меню', ''));
+        buttons.push(build_button('Главное меню', 'MAIN'));
         var keyboard = build_keyboard(buttons);
 
         let msg = new TextMessage(text, keyboard);
@@ -171,7 +175,7 @@ function prosr(project_id, message, response){
         var buttons = [];
         buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
         buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
-        buttons.push(build_button('Главное меню', ''));
+        buttons.push(build_button('Главное меню', 'MAIN'));
         var keyboard = build_keyboard(buttons);
 
         let msg = new TextMessage(text, keyboard);
@@ -196,19 +200,25 @@ function main_menu(message, response){
 
             let wps = result._embedded.elements;
             var text = '';
+            let prosrc = 0;
+            let nearc = 0;
             for (var w in wps) {
                 let due_date = new Date(wps[w].dueDate);
                 let now = new Date(Date.now());
                 const diffTime = Math.abs(due_date.getTime() - now.getTime());
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 if (due_date < Date.now()) {
-                    bgColor = '#DC143C';
+                    prosrc++;
                     break;
                 }
                 if (diffDays <= 14) {
-                    bgColor = '#FFA500';
-                    break;
+                    nearc++;
                 }
+            }
+            if (prosrc > 0){
+                bgColor = '#DC143C';
+            }else if (nearc > 0){
+                bgColor = '#FFA500';
             }
 
             buttons.push(build_button(projects[p].name, VIEW_PROJECT + ',' + projects[p].id, bgColor));
