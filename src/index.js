@@ -156,7 +156,7 @@ bot.onTextMessage(/./, (message, response) => {
                      for(var p in projects) {
                          let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true });
                          let result =JSON.parse(res.getBody('utf8'));
-                         var bgColor = '#40E0D0';
+                         var bgColor = '#228B22';
 
                          let wps = result._embedded.elements;
                          var text = '';
