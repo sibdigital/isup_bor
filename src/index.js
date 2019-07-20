@@ -122,9 +122,9 @@ function near(project_id, message, response){
         for (var w in wps) {
             let due_date = new Date(wps[w].dueDate);
             let now = new Date(Date.now());
-            const diffTime = Math.abs(due_date.getTime() - now.getTime());
+            const diffTime = due_date.getTime() - now.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays <= 14) {
+            if (diffDays <= 14 && diffDays >= 0) {
                 text += "\u23f3"
                     + " " + wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
                     + " Ответственный: " + wps[w]._links.assignee.title + '\n'
@@ -205,13 +205,13 @@ function main_menu(message, response){
             for (var w in wps) {
                 let due_date = new Date(wps[w].dueDate);
                 let now = new Date(Date.now());
-                const diffTime = Math.abs(due_date.getTime() - now.getTime());
+                const diffTime = due_date.getTime() - now.getTime();
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 if (due_date < Date.now()) {
                     prosrc++;
                     break;
                 }
-                if (diffDays <= 14) {
+                if (diffDays <= 14 && diffDays >= 0) {
                     nearc++;
                 }
             }
