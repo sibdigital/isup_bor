@@ -99,7 +99,7 @@ bot.onTextMessage(/./, (message, response) => {
                                 + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
                         }
                     }
-                    if (text === ''){
+                    if (text == ''){
                         text = '\u2705' + 'Просроченные КТ и мероприятия отсутствуют';
                     }
 
@@ -133,7 +133,7 @@ bot.onTextMessage(/./, (message, response) => {
                                 + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
                         }
                     }
-                    if (text === ''){
+                    if (text == ''){
                         text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
                     }
 
