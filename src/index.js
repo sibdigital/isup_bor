@@ -112,36 +112,35 @@ bot.onTextMessage(/./, (message, response) => {
                     response.send(msg);
                 });
 
-                const pdmgr = new PensionDocInfoManager();
-                const pdk = pdmgr.keyboard();
-
             } else if (splitted[0] === WP_NEAR) {
-                if (err) { return console.log(err); }
-                //console.log(body);
-                let wps = body._embedded.elements;
-                var text = '';
-                for(var w in wps) {
-                    const diffTime = Math.abs(due_date.getTime() - Date.now().getTime());
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    if (diffDays <= 14){
-                        text += "\u23f3"
-                            + " "+ wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
-                            + "\tОтветственный: " + wps[w]._links.assignee.title + '\n'
-                            + '\tCрок исполнения: ' + wps[w].dueDate + '\n';
+                request(head_url +apikey +'@' + projects_url + '/' + project_id + '/' + wp_url, { json: true }, (err, res, body) => {
+                    if (err) { return console.log(err); }
+                    //console.log(body);
+                    let wps = body._embedded.elements;
+                    var text = '';
+                    for(var w in wps) {
+                        const diffTime = Math.abs(due_date.getTime() - Date.now().getTime());
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (diffDays <= 14){
+                            text += "\u23f3"
+                                + " "+ wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
+                                + "\tОтветственный: " + wps[w]._links.assignee.title + '\n'
+                                + '\tCрок исполнения: ' + wps[w].dueDate + '\n';
+                        }
                     }
-                }
-                if (text === ''){
-                    text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
-                }
+                    if (text === ''){
+                        text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
+                    }
 
-                var buttons = [];
-                buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id));
-                buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id));
-                buttons.push(build_button('Главное меню', ''));
-                var keyboard = build_keyboard(buttons);
+                    var buttons = [];
+                    buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id));
+                    buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id));
+                    buttons.push(build_button('Главное меню', ''));
+                    var keyboard = build_keyboard(buttons);
 
-                let msg = new TextMessage(text, keyboard);
-                response.send(msg);
+                    let msg = new TextMessage(text, keyboard);
+                    response.send(msg);
+                });
             } else{
                  logger.log('request projects');
                  request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) => {
