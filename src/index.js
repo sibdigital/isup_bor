@@ -137,6 +137,7 @@ bot.onTextMessage(/./, (message, response) => {
             //     response.send(msg);
             // }
         }else{
+            logger.log('request projects');
             request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) => {
                 if (err) { return console.log(err); }
                 let projects = body._embedded.elements;
@@ -144,7 +145,7 @@ bot.onTextMessage(/./, (message, response) => {
                 var buttons = []
                 for(var p in projects) {
                     buttons.push(button(projects[p].name, VIEW_PROJECT));
-                    console.log(projects[p].name);
+                    logger.log(projects[p].name);
                 }
 
                 var keyboard = keyboard(buttons);
