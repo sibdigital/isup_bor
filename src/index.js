@@ -156,19 +156,18 @@ bot.onTextMessage(/./, (message, response) => {
                 });
             } else {
                 logger.log('request projects');
-                response.send(main_menu());
+                main_menu(message, response);
             }
         } else {
             logger.log('request projects');
-            response.send(main_menu());
-
+            main_menu(message, response);
         }
     } catch (e) {
         logger.debug(e);
     }
 });
 
-function main_menu(){
+function main_menu(message, response){
     request(head_url + apikey + '@' + projects_url, {json: true}, (err, res, body) => {
         if (err) {
             return console.log(err);
@@ -205,7 +204,7 @@ function main_menu(){
         var keyboard = build_keyboard(buttons);
 
         let msg = new TextMessage("Выберите проект", keyboard);
-        return msg;
+        response.send(msg);
         //console.log(body);
     });
 }
