@@ -94,8 +94,8 @@ bot.onTextMessage(/./, (message, response) => {
                         if (due_date < Date.now()){
                             text += "\ud83d\udd34"
                                 + " "+ wps[w].subject + ' Просрочено \n'
-                                + "\tОтветственный: " + wps[w]._links.assignee.title + '\n'
-                                + '\tCрок исполнения: ' + wps[w].dueDate + '\n';
+                                + " Ответственный: " + wps[w]._links.assignee.title + '\n'
+                                + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
                         }
                     }
                     if (text === ''){
@@ -121,13 +121,14 @@ bot.onTextMessage(/./, (message, response) => {
                     let wps = body._embedded.elements;
                     var text = '';
                     for(var w in wps) {
+                        let due_date = new Date(wps[w].dueDate);
                         const diffTime = Math.abs(due_date.getTime() - Date.now().getTime());
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         if (diffDays <= 14){
                             text += "\u23f3"
                                 + " "+ wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
-                                + "\tОтветственный: " + wps[w]._links.assignee.title + '\n'
-                                + '\tCрок исполнения: ' + wps[w].dueDate + '\n';
+                                + " Ответственный: " + wps[w]._links.assignee.title + '\n'
+                                + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
                         }
                     }
                     if (text === ''){
