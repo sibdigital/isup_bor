@@ -124,7 +124,8 @@ function near(project_id, message, response){
             let now = new Date(Date.now());
             const diffTime = due_date.getTime() - now.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays <= 14 && diffDays >= 0) {
+            if (diffDays <= 14 && diffDays >= 0 && (wps[w]._links.status.title == 'Не начат'
+                || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
                 text += "\u23f3"
                     + " " + wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
                     + " Ответственный: " + wps[w]._links.assignee.title + '\n'
@@ -161,7 +162,8 @@ function prosr(project_id, message, response){
         var text = '';
         for (var w in wps) {
             let due_date = new Date(wps[w].dueDate);
-            if (due_date < Date.now()) {
+            if (due_date < Date.now() && (wps[w]._links.status.title == 'Не начат'
+                || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
                 text += "\ud83d\udd34"
                     + " " + wps[w].subject + ' Просрочено \n'
                     + " Ответственный: " + wps[w]._links.assignee.title + '\n'
@@ -207,11 +209,13 @@ function main_menu(message, response){
                 let now = new Date(Date.now());
                 const diffTime = due_date.getTime() - now.getTime();
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (due_date < Date.now()) {
+                if (due_date < Date.now() && (wps[w]._links.status.title == 'Не начат'
+                    || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
                     prosrc++;
                     break;
                 }
-                if (diffDays <= 14 && diffDays >= 0) {
+                if (diffDays <= 14 && diffDays >= 0 && (wps[w]._links.status.title == 'Не начат'
+                    || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
                     nearc++;
                 }
             }
