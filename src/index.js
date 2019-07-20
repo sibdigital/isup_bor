@@ -106,11 +106,11 @@ function near(project_id, message, response){
         if (err) {
             return console.log(err);
         }
-        var text = '';
+
         //console.log(body);
         logger.log(body);
         let wps = body._embedded.elements;
-
+        var text = '';
         for (var w in wps) {
             let due_date = new Date(wps[w].dueDate);
             let now = new Date(Date.now());
@@ -143,10 +143,10 @@ function prosr(project_id, message, response){
         if (err) {
             return console.log(err);
         }
-        var text = '';
+
         //console.log(body);
         let wps = body._embedded.elements;
-
+        var text = '';
         for (var w in wps) {
             let due_date = new Date(wps[w].dueDate);
             if (due_date < Date.now()) {

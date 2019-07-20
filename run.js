@@ -49,16 +49,16 @@ request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) 
     //     console.log(projects[p].name);
     // }
     //
-    for(var p in projects) {
-        request(head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true }, (err, res, body) => {
-            if (err) { return console.log(err); }
-            //console.log(body);
-            let wps = body._embedded.elements;
-            for(var w in wps) {
-                console.log(wps[w].subject + '  ' + wps[w]._links.assignee.title);
-            }
-        });
-    }
+    // for(var p in projects) {
+    //     request(head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true }, (err, res, body) => {
+    //         if (err) { return console.log(err); }
+    //         //console.log(body);
+    //         let wps = body._embedded.elements;
+    //         for(var w in wps) {
+    //             console.log(wps[w].subject + '  ' + wps[w]._links.assignee.title);
+    //         }
+    //     });
+    // }
 
     //console.log(body);
 });
@@ -81,6 +81,38 @@ function keyboard (buttons, bg_color, default_height){
         BgColor: bg_color ||'#F0FFFF',
         Buttons: buttons
     }
+}
+
+let project_id = 1;
+request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
+    if (err) {
+        return console.log(err);
+    }
+    var text = '';
+    //console.log(body);
+    console.log(body);
+    let wps = body._embedded.elements;
+
+    for (var w in wps) {
+        let due_date = new Date(wps[w].dueDate);
+        let now = new Date(Date.now());
+        const diffTime = Math.abs(due_date.getTime() - now.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays <= 14) {
+            text += "\u23f3"
+                + " " + wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
+                + " Ответственный: " + wps[w]._links.assignee.title + '\n'
+                + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
+        }
+    }
+    if (isEmpty(text)) {
+        text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
+    }
+    console.log(text);
+});
+
+function isEmpty(str) {
+    return (!str || 0 === str.length);
 }
 
 // const https = require('https');
