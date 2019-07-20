@@ -75,8 +75,8 @@ bot.onTextMessage(/./, (message, response) => {
                 let project_id = splitted[1];
 
                 var buttons = [];
-                buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id));
-                buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id));
+                buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
+                buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
                 buttons.push(build_button('Главное меню', ''));
                 var keyboard = build_keyboard(buttons);
 
