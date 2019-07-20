@@ -67,9 +67,9 @@ bot.onTextMessage(/./, (message, response) => {
     try {
         logger.log(response.userProfile.name + " : " + response.userProfile.id);
         all_users.add(response.userProfile.name + " : " + response.userProfile.id);
-        const text = message.text;
-        if (text != undefined) {
-            let splitted = text.split(',')
+        const mtext = message.text;
+        if (mtext != undefined) {
+            let splitted = mtext.split(',')
             if (splitted[0] === VIEW_PROJECT) {
                 let project_id = splitted[1];
 
