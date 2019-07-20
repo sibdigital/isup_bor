@@ -84,7 +84,7 @@ bot.onTextMessage(/./, (message, response) => {
         all_users.add(response.userProfile.name + " : " + response.userProfile.id);
         const text = message.text;
         if (text != undefined) {
-            // if (text === main_keyboard.SHEDULE_INFO) {
+             if (text === VIEW_PROJECT) {
             //     const simgr = new SheduleInfoManager();
             //     const sik = simgr.keyboard();
             //     let msg = new TextMessage("Узнайте адрес, время работы и контакты клиентской службы", sik);
@@ -132,10 +132,25 @@ bot.onTextMessage(/./, (message, response) => {
             //     });
             //     let msg = new TextMessage(txt, main_keyboard.MAIN_KEYBOARD);
             //     response.send(msg);
-            // } else{
-            //     let msg = new TextMessage("Выберите действие", main_keyboard.MAIN_KEYBOARD);
-            //     response.send(msg);
-            // }
+             } else{
+                 logger.log('request projects');
+                 request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) => {
+                     if (err) { return console.log(err); }
+                     let projects = body._embedded.elements;
+
+                     var buttons = []
+                     for(var p in projects) {
+                         buttons.push(button(projects[p].name, VIEW_PROJECT));
+                         logger.log(projects[p].name);
+                     }
+
+                     var keyboard = keyboard(buttons);
+
+                     let msg = new TextMessage("Выберите проект", keyboard);
+                     response.send(msg);
+                     //console.log(body);
+                 });
+             }
         }else{
             logger.log('request projects');
             request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) => {
