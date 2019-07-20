@@ -122,7 +122,8 @@ bot.onTextMessage(/./, (message, response) => {
                     var text = '';
                     for(var w in wps) {
                         let due_date = new Date(wps[w].dueDate);
-                        const diffTime = Math.abs(due_date.getTime() - Date.now().getTime());
+                        let now = new Date(Date.now());
+                        const diffTime = Math.abs(due_date.getTime() - now.getTime());
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         if (diffDays <= 14){
                             text += "\u23f3"
