@@ -121,6 +121,7 @@ bot.onTextMessage(/./, (message, response) => {
                     if (err) { return console.log(err); }
                     var text = '';
                     //console.log(body);
+                        logger.log(body);
                         let wps = body._embedded.elements;
 
                         for(var w in wps) {
