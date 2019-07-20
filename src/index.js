@@ -88,19 +88,23 @@ bot.onTextMessage(/./, (message, response) => {
                 request(head_url +apikey +'@' + projects_url + '/' + project_id + '/' + wp_url, { json: true }, (err, res, body) => {
                     if (err) { return console.log(err); }
                     //console.log(body);
-                    let wps = body._embedded.elements;
-                    var text = '';
-                    for(var w in wps) {
-                        let due_date = new Date(wps[w].dueDate);
-                        if (due_date < Date.now()){
-                            text += "\ud83d\udd34"
-                                + " "+ wps[w].subject + ' Просрочено \n'
-                                + " Ответственный: " + wps[w]._links.assignee.title + '\n'
-                                + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
+                    try {
+                        let wps = body._embedded.elements;
+                        var text = '';
+                        for (var w in wps) {
+                            let due_date = new Date(wps[w].dueDate);
+                            if (due_date < Date.now()) {
+                                text += "\ud83d\udd34"
+                                    + " " + wps[w].subject + ' Просрочено \n'
+                                    + " Ответственный: " + wps[w]._links.assignee.title + '\n'
+                                    + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
+                            }
                         }
-                    }
-                    if (isEmpty(text)){
-                        text = '\u2705' + 'Просроченные КТ и мероприятия отсутствуют';
+                        if (isEmpty(text)) {
+                            text = '\u2705' + 'Просроченные КТ и мероприятия отсутствуют';
+                        }
+                    }catch (e) {
+                        logger.log(e);
                     }
 
                     var buttons = [];
@@ -119,23 +123,28 @@ bot.onTextMessage(/./, (message, response) => {
                 request(head_url +apikey +'@' + projects_url + '/' + project_id + '/' + wp_url, { json: true }, (err, res, body) => {
                     if (err) { return console.log(err); }
                     //console.log(body);
-                    let wps = body._embedded.elements;
-                    var text = '';
-                    for(var w in wps) {
-                        let due_date = new Date(wps[w].dueDate);
-                        let now = new Date(Date.now());
-                        const diffTime = Math.abs(due_date.getTime() - now.getTime());
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        if (diffDays <= 14){
-                            text += "\u23f3"
-                                + " "+ wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
-                                + " Ответственный: " + wps[w]._links.assignee.title + '\n'
-                                + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
+                    try{
+                        let wps = body._embedded.elements;
+                        var text = '';
+                        for(var w in wps) {
+                            let due_date = new Date(wps[w].dueDate);
+                            let now = new Date(Date.now());
+                            const diffTime = Math.abs(due_date.getTime() - now.getTime());
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            if (diffDays <= 14){
+                                text += "\u23f3"
+                                    + " "+ wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
+                                    + " Ответственный: " + wps[w]._links.assignee.title + '\n'
+                                    + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
+                            }
                         }
+                        if (isEmpty(text)){
+                            text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
+                        }
+                    }catch (e) {
+                        logger.log(e);
                     }
-                    if (isEmpty(text)){
-                        text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
-                    }
+
 
                     var buttons = [];
                     buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
@@ -154,25 +163,29 @@ bot.onTextMessage(/./, (message, response) => {
 
                      var buttons = []
                      for(var p in projects) {
-                         let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true });
-                         let result =JSON.parse(res.getBody('utf8'));
-                         var bgColor = '#228B22';
+                         try{
+                             let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true });
+                             let result =JSON.parse(res.getBody('utf8'));
+                             var bgColor = '#228B22';
 
-                         let wps = result._embedded.elements;
-                         var text = '';
-                         for(var w in wps) {
-                             let due_date = new Date(wps[w].dueDate);
-                             let now = new Date(Date.now());
-                             const diffTime = Math.abs(due_date.getTime() - now.getTime());
-                             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                             if (due_date < Date.now()){
-                                 bgColor = '#DC143C';
-                                 break;
+                             let wps = result._embedded.elements;
+                             var text = '';
+                             for(var w in wps) {
+                                 let due_date = new Date(wps[w].dueDate);
+                                 let now = new Date(Date.now());
+                                 const diffTime = Math.abs(due_date.getTime() - now.getTime());
+                                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                 if (due_date < Date.now()){
+                                     bgColor = '#DC143C';
+                                     break;
+                                 }
+                                 if (diffDays <= 14){
+                                     bgColor = '#FFA500';
+                                     break;
+                                 }
                              }
-                             if (diffDays <= 14){
-                                 bgColor = '#FFA500';
-                                 break;
-                             }
+                         }catch (e) {
+                             logger.log(e);
                          }
 
                          buttons.push(build_button(projects[p].name, VIEW_PROJECT + ',' + projects[p].i, bgColor));
@@ -194,25 +207,29 @@ bot.onTextMessage(/./, (message, response) => {
 
                 var buttons = []
                 for(var p in projects) {
-                    let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true });
-                    let result =JSON.parse(res.getBody('utf8'));
-                    var bgColor = '#40E0D0';
+                    try{
+                        let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true });
+                        let result =JSON.parse(res.getBody('utf8'));
+                        var bgColor = '#228B22';
 
-                    let wps = result._embedded.elements;
-                    var text = '';
-                    for(var w in wps) {
-                        let due_date = new Date(wps[w].dueDate);
-                        let now = new Date(Date.now());
-                        const diffTime = Math.abs(due_date.getTime() - now.getTime());
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        if (due_date < Date.now()){
-                            bgColor = '#DC143C';
-                            break;
+                        let wps = result._embedded.elements;
+                        var text = '';
+                        for(var w in wps) {
+                            let due_date = new Date(wps[w].dueDate);
+                            let now = new Date(Date.now());
+                            const diffTime = Math.abs(due_date.getTime() - now.getTime());
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            if (due_date < Date.now()){
+                                bgColor = '#DC143C';
+                                break;
+                            }
+                            if (diffDays <= 14){
+                                bgColor = '#FFA500';
+                                break;
+                            }
                         }
-                        if (diffDays <= 14){
-                            bgColor = '#FFA500';
-                            break;
-                        }
+                    }catch (e) {
+                        logger.log(e);
                     }
 
                     buttons.push(build_button(projects[p].name, VIEW_PROJECT, bgColor));
