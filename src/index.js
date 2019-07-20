@@ -87,10 +87,11 @@ bot.onTextMessage(/./, (message, response) => {
 
                 request(head_url +apikey +'@' + projects_url + '/' + project_id + '/' + wp_url, { json: true }, (err, res, body) => {
                     if (err) { return console.log(err); }
+                    var text = '';
                     //console.log(body);
                     try {
                         let wps = body._embedded.elements;
-                        var text = '';
+
                         for (var w in wps) {
                             let due_date = new Date(wps[w].dueDate);
                             if (due_date < Date.now()) {
@@ -122,10 +123,11 @@ bot.onTextMessage(/./, (message, response) => {
 
                 request(head_url +apikey +'@' + projects_url + '/' + project_id + '/' + wp_url, { json: true }, (err, res, body) => {
                     if (err) { return console.log(err); }
+                    var text = '';
                     //console.log(body);
                     try{
                         let wps = body._embedded.elements;
-                        var text = '';
+
                         for(var w in wps) {
                             let due_date = new Date(wps[w].dueDate);
                             let now = new Date(Date.now());
