@@ -175,8 +175,8 @@ bot.onTextMessage(/./, (message, response) => {
                              }
                          }
 
-                         buttons.push(build_button(projects[p].name, VIEW_PROJECT + ',' + projects[p].id));
-                         logger.log(projects[p].name);
+                         buttons.push(build_button(projects[p].name, VIEW_PROJECT + ',' + projects[p].i, bgColor));
+                         logger.log(projects[p].name + ' ' + bgColor);
                      }
 
                      var keyboard = build_keyboard(buttons);
@@ -216,7 +216,7 @@ bot.onTextMessage(/./, (message, response) => {
                     }
 
                     buttons.push(build_button(projects[p].name, VIEW_PROJECT, bgColor));
-                    logger.log(projects[p].name);
+                    logger.log(projects[p].name + ' ' + bgColor);
                 }
 
                 var keyboard = build_keyboard(buttons);
@@ -261,7 +261,7 @@ if (process.env.NOW_URL || process.env.HEROKU_URL) {
 
 function build_button(text, action_body, bg_color, text_size, action_type) {
     return {
-        BgColor: bg_color ,//|| '#40E0D0',
+        BgColor: bg_color || '#40E0D0',
         Text: text,
         ActionType: action_type || 'reply',
         ActionBody: action_body,
