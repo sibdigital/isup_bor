@@ -3,10 +3,15 @@ const apikey = '6ed35a6ba7f37cfa58524ab99a4df244b71ce6c63d7d3ac5fcb04aa5d8a895a7
 const projects_url = 'opsd3.herokuapp.com/api/v3/projects';
 const head_url = 'https://apikey:';
 const wp_url = 'work_packages';
+var sync_request = require('sync-request');
 
 const VIEW_PROJECT = 'VIEW_PROJECT';
 
 const request = require('request');
+
+let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + 1 + '/' + wp_url, { json: true });
+let result =JSON.parse(res.getBody('utf8'))
+console.log(result)
 
 request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) => {
     if (err) { return console.log(err); }

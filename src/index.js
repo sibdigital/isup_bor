@@ -22,6 +22,7 @@ const ngrok = require('./get_public_url');
 
 var all_users = ngrok.users;
 var request = require('request');
+var sync_request = require('sync-request');
 
 function createLogger() {
     const logger = new winston.Logger({
@@ -103,8 +104,8 @@ bot.onTextMessage(/./, (message, response) => {
                     }
 
                     var buttons = [];
-                    buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id));
-                    buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id));
+                    buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id), '#DC143C');
+                    buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id), '#FFA500');
                     buttons.push(build_button('Главное меню', ''));
                     var keyboard = build_keyboard(buttons);
 
@@ -137,8 +138,8 @@ bot.onTextMessage(/./, (message, response) => {
                     }
 
                     var buttons = [];
-                    buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id));
-                    buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id));
+                    buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id), '#DC143C');
+                    buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id), '#FFA500');
                     buttons.push(build_button('Главное меню', ''));
                     var keyboard = build_keyboard(buttons);
 
@@ -153,6 +154,27 @@ bot.onTextMessage(/./, (message, response) => {
 
                      var buttons = []
                      for(var p in projects) {
+                         let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true });
+                         let result =JSON.parse(res.getBody('utf8'));
+                         var bgColor = '#40E0D0';
+
+                         let wps = result._embedded.elements;
+                         var text = '';
+                         for(var w in wps) {
+                             let due_date = new Date(wps[w].dueDate);
+                             let now = new Date(Date.now());
+                             const diffTime = Math.abs(due_date.getTime() - now.getTime());
+                             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                             if (due_date < Date.now()){
+                                 bgColor = '#DC143C';
+                                 break;
+                             }
+                             if (diffDays <= 14){
+                                 bgColor = '#FFA500';
+                                 break;
+                             }
+                         }
+
                          buttons.push(build_button(projects[p].name, VIEW_PROJECT + ',' + projects[p].id));
                          logger.log(projects[p].name);
                      }
@@ -172,7 +194,28 @@ bot.onTextMessage(/./, (message, response) => {
 
                 var buttons = []
                 for(var p in projects) {
-                    buttons.push(build_button(projects[p].name, VIEW_PROJECT));
+                    let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true });
+                    let result =JSON.parse(res.getBody('utf8'));
+                    var bgColor = '#40E0D0';
+
+                    let wps = result._embedded.elements;
+                    var text = '';
+                    for(var w in wps) {
+                        let due_date = new Date(wps[w].dueDate);
+                        let now = new Date(Date.now());
+                        const diffTime = Math.abs(due_date.getTime() - now.getTime());
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (due_date < Date.now()){
+                            bgColor = '#DC143C';
+                            break;
+                        }
+                        if (diffDays <= 14){
+                            bgColor = '#FFA500';
+                            break;
+                        }
+                    }
+
+                    buttons.push(build_button(projects[p].name, VIEW_PROJECT, bgColor));
                     logger.log(projects[p].name);
                 }
 
@@ -216,7 +259,7 @@ if (process.env.NOW_URL || process.env.HEROKU_URL) {
     });
 }
 
-function build_button(text, action_body, action_type, text_size, bg_color) {
+function build_button(text, action_body , bg_color, text_size, action_type) {
     return {
         BgColor: bg_color || '#40E0D0',
         Text: text,
