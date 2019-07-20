@@ -12,28 +12,28 @@ request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) 
     if (err) { return console.log(err); }
     let projects = body._embedded.elements;
 
-    var buttons = []
-    for(var p in projects) {
-        buttons.push(button(projects[p].name, VIEW_PROJECT));
-        console.log(projects[p].name);
-    }
-
-    console.log(keyboard (buttons));
+    // var buttons = []
+    // for(var p in projects) {
+    //     buttons.push(button(projects[p].name, VIEW_PROJECT));
+    //     console.log(projects[p].name);
+    // }
+    //
+    // console.log(keyboard (buttons));
 
     // for(var p in projects) {
     //     console.log(projects[p].name);
     // }
     //
-    // for(var p in projects) {
-    //     request(head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true }, (err, res, body) => {
-    //         if (err) { return console.log(err); }
-    //         //console.log(body);
-    //         let wps = body._embedded.elements;
-    //         for(var w in wps) {
-    //             console.log(wps[w].subject);
-    //         }
-    //     });
-    // }
+    for(var p in projects) {
+        request(head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true }, (err, res, body) => {
+            if (err) { return console.log(err); }
+            //console.log(body);
+            let wps = body._embedded.elements;
+            for(var w in wps) {
+                console.log(wps[w].subject);
+            }
+        });
+    }
 
     //console.log(body);
 });

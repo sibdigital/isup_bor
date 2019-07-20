@@ -11,6 +11,8 @@ const head_url = 'https://apikey:';
 const wp_url = 'work_packages';
 
 const VIEW_PROJECT = 'VIEW_PROJECT';
+const WP_PROSR = 'WP_PROSR';
+const WP_NEAR = 'WP_NEAR';
 
 require('dotenv').config();
 
@@ -61,77 +63,55 @@ bot.on(BotEvents.MESSAGE_RECEIVED, (message, response) => {
     }
 });
 
-// bot.onLocationMessage = function (message, response){
-//     try {
-//         logger.log(response.userProfile.name + " : " + response.userProfile.id + " - " + message.latitude + " : " + message.longitude);
-//         all_users.add(response.userProfile.name + " : " + response.userProfile.id + " - " + message.latitude + " : " + message.longitude);
-//         const simgr = new SheduleInfoManager();
-//         const shed = simgr.nearest(message.latitude, message.longitude);
-//         const shedInfo = simgr.asString(shed);
-//         let msg = new TextMessage('Ближайшая к вам клиентская служба: \n'+ shedInfo, main_keyboard.MAIN_KEYBOARD);
-//         response.send(msg);
-//
-//         let loc = new LocationMessage(shed.Adress.latitude, shed.Adress.longitude, main_keyboard.MAIN_KEYBOARD);
-//         response.send(loc);
-//     }catch (e) {
-//         logger.debug(e);
-//     }
-// }
-
 bot.onTextMessage(/./, (message, response) => {
     try {
         logger.log(response.userProfile.name + " : " + response.userProfile.id);
         all_users.add(response.userProfile.name + " : " + response.userProfile.id);
         const text = message.text;
         if (text != undefined) {
-             if (text === VIEW_PROJECT) {
-            //     const simgr = new SheduleInfoManager();
-            //     const sik = simgr.keyboard();
-            //     let msg = new TextMessage("Узнайте адрес, время работы и контакты клиентской службы", sik);
-            //     response.send(msg);
-            //
-            // } else if (text === main_keyboard.PENS_DOC) {
-            //     const pdmgr = new PensionDocInfoManager();
-            //     const pdk = pdmgr.keyboard();
-            //     let msg = new TextMessage("Узнайте, какие документы необходмы в различных жизненных ситуациях", pdk);
-            //     response.send(msg);
-            // }else if (text === main_keyboard.NEAREST_KS) {
-            //     let msg = new TextMessage("Отправьте мне ваше местоположение и я покажу на карте ближайшую клиентскую службу");
-            //     response.send(msg);
-            // }else if (text === main_keyboard.PRED_PENS_DOC) {
-            //     const ppdmgr = new PredPensionDocInfoManager();
-            //     const ppdk = ppdmgr.keyboard();
-            //     let msg = new TextMessage("Часто задаваемые вопросы о предпенсионном возрасте", ppdk);
-            //     response.send(msg);
-            // }else if (text === main_keyboard.MAIN_MENU) {
-            //     let msg = new TextMessage("Выберите действие", main_keyboard.MAIN_KEYBOARD);
-            //     response.send(msg);
-            //
-            // } else if (text.startsWith(main_keyboard.KS_PREFIX)) {
-            //     const simgr = new SheduleInfoManager();
-            //     const shedInfo = simgr.infoAsString(text);
-            //     let msg = new TextMessage(shedInfo, main_keyboard.MAIN_KEYBOARD);
-            //     response.send(msg);
-            //
-            // }else if (text.startsWith(main_keyboard.PENSION_DOC_PREFIX)) {
-            //     const pdmgr = new PensionDocInfoManager();
-            //     const pdInfo = pdmgr.infoAsString(text);
-            //     let msg = new TextMessage(pdInfo, main_keyboard.MAIN_KEYBOARD);
-            //     response.send(msg);
-            //
-            // }else if (text.startsWith(main_keyboard.PRED_PENS_PREFIX)) {
-            //     const ppdmgr = new PredPensionDocInfoManager();
-            //     const ppdInfo = ppdmgr.infoAsString(text);
-            //     let msg = new TextMessage(ppdInfo, main_keyboard.MAIN_KEYBOARD);
-            //     response.send(msg);
-            //
-            // } else if (text === 'юзеры') {
-            //     var txt = '';
-            //     all_users.forEach(function (value) {
-            //         txt += value + '\n';
-            //     });
-            //     let msg = new TextMessage(txt, main_keyboard.MAIN_KEYBOARD);
-            //     response.send(msg);
+            let splitted = text.split(',')
+            if (splitted[0] === VIEW_PROJECT) {
+                let project_id = splitted[1];
+
+                var buttons = [];
+                buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id));
+                buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id));
+                buttons.push(build_button('Главное меню', ''));
+                var keyboard = build_keyboard(buttons);
+
+                let msg = new TextMessage("Информация по мероприятиям и КТ", keyboard);
+                response.send(msg);
+             } else if (splitted[0] === WP_PROSR) {
+                let project_id = splitted[1];
+
+                request(head_url +apikey +'@' + projects_url + '/' + project_id + '/' + wp_url, { json: true }, (err, res, body) => {
+                    if (err) { return console.log(err); }
+                    //console.log(body);
+                    let wps = body._embedded.elements;
+                    var text = '';
+                    for(var w in wps) {
+                        let due_date = new Date(wps[w].dueDate);
+                        if (due_date < Date.now()){
+                            text += '' + wps[w].subject + '. Просрочено, срок исполнения: ' + wps[w].dueDate + '\n';
+                        }
+                    }
+                    if (text === ''){
+                        text = 'Просроченные КТ и мероприятия отсутствуют';
+                    }
+
+                    var buttons = [];
+                    buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id));
+                    buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id));
+                    buttons.push(build_button('Главное меню', ''));
+                    var keyboard = build_keyboard(buttons);
+
+                    let msg = new TextMessage(text, keyboard);
+                    response.send(msg);
+                });
+
+                const pdmgr = new PensionDocInfoManager();
+                const pdk = pdmgr.keyboard();
+
              } else{
                  logger.log('request projects');
                  request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) => {
@@ -140,7 +120,7 @@ bot.onTextMessage(/./, (message, response) => {
 
                      var buttons = []
                      for(var p in projects) {
-                         buttons.push(build_button(projects[p].name, VIEW_PROJECT));
+                         buttons.push(build_button(projects[p].name, VIEW_PROJECT + ',' + projects[p].id));
                          logger.log(projects[p].name);
                      }
 
@@ -222,3 +202,5 @@ function build_keyboard (buttons, bg_color, default_height){
         Buttons: buttons
     }
 }
+
+//new Date(wps[w].dueDate) > Date.now()
