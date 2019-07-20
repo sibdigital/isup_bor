@@ -89,7 +89,6 @@ bot.onTextMessage(/./, (message, response) => {
                     if (err) { return console.log(err); }
                     var text = '';
                     //console.log(body);
-                    try {
                         let wps = body._embedded.elements;
 
                         for (var w in wps) {
@@ -104,9 +103,6 @@ bot.onTextMessage(/./, (message, response) => {
                         if (isEmpty(text)) {
                             text = '\u2705' + 'Просроченные КТ и мероприятия отсутствуют';
                         }
-                    }catch (e) {
-                        logger.log(e);
-                    }
 
                     var buttons = [];
                     buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
@@ -125,7 +121,6 @@ bot.onTextMessage(/./, (message, response) => {
                     if (err) { return console.log(err); }
                     var text = '';
                     //console.log(body);
-                    try{
                         let wps = body._embedded.elements;
 
                         for(var w in wps) {
@@ -143,9 +138,6 @@ bot.onTextMessage(/./, (message, response) => {
                         if (isEmpty(text)){
                             text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
                         }
-                    }catch (e) {
-                        logger.log(e);
-                    }
 
 
                     var buttons = [];
@@ -165,7 +157,6 @@ bot.onTextMessage(/./, (message, response) => {
 
                      var buttons = []
                      for(var p in projects) {
-                         try{
                              let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true });
                              let result =JSON.parse(res.getBody('utf8'));
                              var bgColor = '#228B22';
@@ -186,9 +177,6 @@ bot.onTextMessage(/./, (message, response) => {
                                      break;
                                  }
                              }
-                         }catch (e) {
-                             logger.log(e);
-                         }
 
                          buttons.push(build_button(projects[p].name, VIEW_PROJECT + ',' + projects[p].i, bgColor));
                          logger.log(projects[p].name + ' ' + bgColor);
@@ -209,7 +197,6 @@ bot.onTextMessage(/./, (message, response) => {
 
                 var buttons = []
                 for(var p in projects) {
-                    try{
                         let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true });
                         let result =JSON.parse(res.getBody('utf8'));
                         var bgColor = '#228B22';
@@ -230,9 +217,6 @@ bot.onTextMessage(/./, (message, response) => {
                                 break;
                             }
                         }
-                    }catch (e) {
-                        logger.log(e);
-                    }
 
                     buttons.push(build_button(projects[p].name, VIEW_PROJECT, bgColor));
                     logger.log(projects[p].name + ' ' + bgColor);
