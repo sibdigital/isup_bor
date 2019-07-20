@@ -47,7 +47,7 @@ var bot = new ViberBot(logger, {
 
 // The user will get those messages on first registration
 bot.onSubscribe(response => {
-    say(response, `Hi there ${response.userProfile.name}. I am ${bot.name}! Feel free to ask me if a web site is down for everyone or just you. Just send me a name of a website and I'll do the rest!`);
+    say(response, `Здравствуйте, ${response.userProfile.name}. Начните работу, отправив мне любое сообщение!`);
 });
 
 bot.on(BotEvents.MESSAGE_RECEIVED, (message, response) => {
@@ -56,7 +56,7 @@ bot.on(BotEvents.MESSAGE_RECEIVED, (message, response) => {
         bot.onLocationMessage(message, response);
     }else {
         if (!(message instanceof TextMessage)) {
-            say(response, `Sorry. I can only understand text messages.`);
+            say(response, `Извините, я вас не понимаю`);
         }
     }
 });
@@ -140,11 +140,11 @@ bot.onTextMessage(/./, (message, response) => {
 
                      var buttons = []
                      for(var p in projects) {
-                         buttons.push(button(projects[p].name, VIEW_PROJECT));
+                         buttons.push(build_button(projects[p].name, VIEW_PROJECT));
                          logger.log(projects[p].name);
                      }
 
-                     var keyboard = keyboard(buttons);
+                     var keyboard = build_keyboard(buttons);
 
                      let msg = new TextMessage("Выберите проект", keyboard);
                      response.send(msg);
