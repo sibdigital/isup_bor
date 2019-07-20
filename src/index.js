@@ -55,9 +55,9 @@ bot.onSubscribe(response => {
 
 bot.on(BotEvents.MESSAGE_RECEIVED, (message, response) => {
     //This sample bot can answer only text messages, let's make sure the user is aware of that.
-    if (message instanceof LocationMessage){
+    if (message instanceof LocationMessage) {
         bot.onLocationMessage(message, response);
-    }else {
+    } else {
         if (!(message instanceof TextMessage)) {
             say(response, `Извините, я вас не понимаю`);
         }
@@ -82,27 +82,29 @@ bot.onTextMessage(/./, (message, response) => {
 
                 let msg = new TextMessage("Информация по мероприятиям и КТ", keyboard);
                 response.send(msg);
-             } else if (splitted[0] === WP_PROSR) {
+            } else if (splitted[0] === WP_PROSR) {
                 let project_id = splitted[1];
 
-                request(head_url +apikey +'@' + projects_url + '/' + project_id + '/' + wp_url, { json: true }, (err, res, body) => {
-                    if (err) { return console.log(err); }
+                request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
+                    if (err) {
+                        return console.log(err);
+                    }
                     var text = '';
                     //console.log(body);
-                        let wps = body._embedded.elements;
+                    let wps = body._embedded.elements;
 
-                        for (var w in wps) {
-                            let due_date = new Date(wps[w].dueDate);
-                            if (due_date < Date.now()) {
-                                text += "\ud83d\udd34"
-                                    + " " + wps[w].subject + ' Просрочено \n'
-                                    + " Ответственный: " + wps[w]._links.assignee.title + '\n'
-                                    + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
-                            }
+                    for (var w in wps) {
+                        let due_date = new Date(wps[w].dueDate);
+                        if (due_date < Date.now()) {
+                            text += "\ud83d\udd34"
+                                + " " + wps[w].subject + ' Просрочено \n'
+                                + " Ответственный: " + wps[w]._links.assignee.title + '\n'
+                                + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
                         }
-                        if (isEmpty(text)) {
-                            text = '\u2705' + 'Просроченные КТ и мероприятия отсутствуют';
-                        }
+                    }
+                    if (isEmpty(text)) {
+                        text = '\u2705' + 'Просроченные КТ и мероприятия отсутствуют';
+                    }
 
                     var buttons = [];
                     buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
@@ -117,28 +119,30 @@ bot.onTextMessage(/./, (message, response) => {
             } else if (splitted[0] === WP_NEAR) {
                 let project_id = splitted[1];
 
-                request(head_url +apikey +'@' + projects_url + '/' + project_id + '/' + wp_url, { json: true }, (err, res, body) => {
-                    if (err) { return console.log(err); }
+                request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
+                    if (err) {
+                        return console.log(err);
+                    }
                     var text = '';
                     //console.log(body);
-                        logger.log(body);
-                        let wps = body._embedded.elements;
+                    logger.log(body);
+                    let wps = body._embedded.elements;
 
-                        for(var w in wps) {
-                            let due_date = new Date(wps[w].dueDate);
-                            let now = new Date(Date.now());
-                            const diffTime = Math.abs(due_date.getTime() - now.getTime());
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                            if (diffDays <= 14){
-                                text += "\u23f3"
-                                    + " "+ wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
-                                    + " Ответственный: " + wps[w]._links.assignee.title + '\n'
-                                    + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
-                            }
+                    for (var w in wps) {
+                        let due_date = new Date(wps[w].dueDate);
+                        let now = new Date(Date.now());
+                        const diffTime = Math.abs(due_date.getTime() - now.getTime());
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (diffDays <= 14) {
+                            text += "\u23f3"
+                                + " " + wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
+                                + " Ответственный: " + wps[w]._links.assignee.title + '\n'
+                                + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
                         }
-                        if (isEmpty(text)){
-                            text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
-                        }
+                    }
+                    if (isEmpty(text)) {
+                        text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
+                    }
 
 
                     var buttons = [];
@@ -150,93 +154,61 @@ bot.onTextMessage(/./, (message, response) => {
                     let msg = new TextMessage(text, keyboard);
                     response.send(msg);
                 });
-            } else{
-                 logger.log('request projects');
-                 request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) => {
-                     if (err) { return console.log(err); }
-                     let projects = body._embedded.elements;
-
-                     var buttons = []
-                     for(var p in projects) {
-                             let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true });
-                             let result =JSON.parse(res.getBody('utf8'));
-                             var bgColor = '#228B22';
-
-                             let wps = result._embedded.elements;
-                             var text = '';
-                             for(var w in wps) {
-                                 let due_date = new Date(wps[w].dueDate);
-                                 let now = new Date(Date.now());
-                                 const diffTime = Math.abs(due_date.getTime() - now.getTime());
-                                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                 if (due_date < Date.now()){
-                                     bgColor = '#DC143C';
-                                     break;
-                                 }
-                                 if (diffDays <= 14){
-                                     bgColor = '#FFA500';
-                                     break;
-                                 }
-                             }
-
-                         buttons.push(build_button(projects[p].name, VIEW_PROJECT + ',' + projects[p].i, bgColor));
-                         logger.log(projects[p].name + ' ' + bgColor);
-                     }
-
-                     var keyboard = build_keyboard(buttons);
-
-                     let msg = new TextMessage("Выберите проект", keyboard);
-                     response.send(msg);
-                     //console.log(body);
-                 });
-             }
-        }else{
+            } else {
+                logger.log('request projects');
+                response.send(main_menu());
+            }
+        } else {
             logger.log('request projects');
-            request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) => {
-                if (err) { return console.log(err); }
-                let projects = body._embedded.elements;
-
-                var buttons = []
-                for(var p in projects) {
-                        let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + projects[p].id + '/' + wp_url, { json: true });
-                        let result =JSON.parse(res.getBody('utf8'));
-                        var bgColor = '#228B22';
-
-                        let wps = result._embedded.elements;
-                        var text = '';
-                        for(var w in wps) {
-                            let due_date = new Date(wps[w].dueDate);
-                            let now = new Date(Date.now());
-                            const diffTime = Math.abs(due_date.getTime() - now.getTime());
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                            if (due_date < Date.now()){
-                                bgColor = '#DC143C';
-                                break;
-                            }
-                            if (diffDays <= 14){
-                                bgColor = '#FFA500';
-                                break;
-                            }
-                        }
-
-                    buttons.push(build_button(projects[p].name, VIEW_PROJECT, bgColor));
-                    logger.log(projects[p].name + ' ' + bgColor);
-                }
-
-                var keyboard = build_keyboard(buttons);
-
-                let msg = new TextMessage("Выберите проект", keyboard);
-                response.send(msg);
-                //console.log(body);
-            });
+            response.send(main_menu());
 
         }
-    }catch (e) {
+    } catch (e) {
         logger.debug(e);
     }
 });
 
+function main_menu(){
+    request(head_url + apikey + '@' + projects_url, {json: true}, (err, res, body) => {
+        if (err) {
+            return console.log(err);
+        }
+        let projects = body._embedded.elements;
 
+        var buttons = []
+        for (var p in projects) {
+            let res = sync_request('GET', head_url + apikey + '@' + projects_url + '/' + projects[p].id + '/' + wp_url, {json: true});
+            let result = JSON.parse(res.getBody('utf8'));
+            var bgColor = '#228B22';
+
+            let wps = result._embedded.elements;
+            var text = '';
+            for (var w in wps) {
+                let due_date = new Date(wps[w].dueDate);
+                let now = new Date(Date.now());
+                const diffTime = Math.abs(due_date.getTime() - now.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (due_date < Date.now()) {
+                    bgColor = '#DC143C';
+                    break;
+                }
+                if (diffDays <= 14) {
+                    bgColor = '#FFA500';
+                    break;
+                }
+            }
+
+            buttons.push(build_button(projects[p].name, VIEW_PROJECT, bgColor));
+            logger.log(projects[p].name + ' ' + bgColor);
+        }
+
+        var keyboard = build_keyboard(buttons);
+
+        let msg = new TextMessage("Выберите проект", keyboard);
+        return msg;
+        //console.log(body);
+    });
+}
 
 bot.onConversationStarted((userProfile, isSubscribed, context, onFinish) => onFinish(
     new TextMessage(`Чтобы начать работу, отправьте мне любое сообщение`), {
@@ -273,12 +245,12 @@ function build_button(text, action_body, bg_color, text_size, action_type) {
     }
 }
 
-function build_keyboard (buttons, bg_color, default_height){
+function build_keyboard(buttons, bg_color, default_height) {
     return {
         Type: "keyboard",
         Revision: 1,
         DefaultHeight: default_height || true,
-        BgColor: bg_color ||'#F0FFFF',
+        BgColor: bg_color || '#F0FFFF',
         Buttons: buttons
     }
 }
