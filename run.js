@@ -10,7 +10,27 @@ const VIEW_PROJECT = 'VIEW_PROJECT';
 const request = require('request');
 
 let res = sync_request('GET', head_url +apikey +'@' + projects_url + '/' + 1 + '/' + wp_url, { json: true });
-let result =JSON.parse(res.getBody('utf8'))
+let result =JSON.parse(res.getBody('utf8'));
+
+var bgColor = '#40E0D0';
+
+let wps = result._embedded.elements;
+var text = '';
+for(var w in wps) {
+    let due_date = new Date(wps[w].dueDate);
+    let now = new Date(Date.now());
+    const diffTime = Math.abs(due_date.getTime() - now.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (due_date < Date.now()){
+        bgColor = '#DC143C';
+        break;
+    }
+    if (diffDays <= 14){
+        bgColor = '#FFA500';
+        break;
+    }
+}
+
 console.log(result)
 
 request(head_url +apikey +'@' + projects_url , { json: true }, (err, res, body) => {

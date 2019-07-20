@@ -259,9 +259,9 @@ if (process.env.NOW_URL || process.env.HEROKU_URL) {
     });
 }
 
-function build_button(text, action_body , bg_color, text_size, action_type) {
+function build_button(text, action_body, bg_color, text_size, action_type) {
     return {
-        BgColor: bg_color || '#40E0D0',
+        BgColor: bg_color ,//|| '#40E0D0',
         Text: text,
         ActionType: action_type || 'reply',
         ActionBody: action_body,
