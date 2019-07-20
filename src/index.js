@@ -99,7 +99,7 @@ bot.onTextMessage(/./, (message, response) => {
                                 + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
                         }
                     }
-                    if (text == ''){
+                    if (isEmpty(text)){
                         text = '\u2705' + 'Просроченные КТ и мероприятия отсутствуют';
                     }
 
@@ -133,7 +133,7 @@ bot.onTextMessage(/./, (message, response) => {
                                 + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
                         }
                     }
-                    if (text == ''){
+                    if (isEmpty(text)){
                         text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
                     }
 
@@ -277,6 +277,10 @@ function build_keyboard (buttons, bg_color, default_height){
         BgColor: bg_color ||'#F0FFFF',
         Buttons: buttons
     }
+}
+
+function isEmpty(str) {
+    return (!str || 0 === str.length);
 }
 
 //new Date(wps[w].dueDate) > Date.now()
