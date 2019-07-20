@@ -92,7 +92,7 @@ bot.onTextMessage(/./, (message, response) => {
                     for(var w in wps) {
                         let due_date = new Date(wps[w].dueDate);
                         if (due_date < Date.now()){
-                            text += "\xF0\x9F\x94\xB4" + "<b>Ответственный</b>: " + wps[w]._links.assignee.title
+                            text += "\ud83d\udd34" + "Ответственный: " + wps[w]._links.assignee.title
                                 + " "+ wps[w].subject + '. Просрочено, срок исполнения: ' + wps[w].dueDate + '\n';
                         }
                     }
