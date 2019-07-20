@@ -159,11 +159,11 @@ bot.onTextMessage(/./, (message, response) => {
 
                 var buttons = []
                 for(var p in projects) {
-                    buttons.push(button(projects[p].name, VIEW_PROJECT));
+                    buttons.push(build_button(projects[p].name, VIEW_PROJECT));
                     logger.log(projects[p].name);
                 }
 
-                var keyboard = keyboard(buttons);
+                var keyboard = build_keyboard(buttons);
 
                 let msg = new TextMessage("Выберите проект", keyboard);
                 response.send(msg);
@@ -203,7 +203,7 @@ if (process.env.NOW_URL || process.env.HEROKU_URL) {
     });
 }
 
-function button(text, action_body, action_type, text_size, bg_color) {
+function build_button(text, action_body, action_type, text_size, bg_color) {
     return {
         BgColor: bg_color || '#40E0D0',
         Text: text,
@@ -213,7 +213,7 @@ function button(text, action_body, action_type, text_size, bg_color) {
     }
 }
 
-function keyboard (buttons, bg_color, default_height){
+function build_keyboard (buttons, bg_color, default_height){
     return {
         Type: "keyboard",
         Revision: 1,
