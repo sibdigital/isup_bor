@@ -113,6 +113,8 @@ bot.onTextMessage(/./, (message, response) => {
                 });
 
             } else if (splitted[0] === WP_NEAR) {
+                let project_id = splitted[1];
+
                 request(head_url +apikey +'@' + projects_url + '/' + project_id + '/' + wp_url, { json: true }, (err, res, body) => {
                     if (err) { return console.log(err); }
                     //console.log(body);
