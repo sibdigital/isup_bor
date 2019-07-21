@@ -55,13 +55,17 @@ bot.onSubscribe(response => {
 });
 
 bot.on(BotEvents.MESSAGE_RECEIVED, (message, response) => {
-    //This sample bot can answer only text messages, let's make sure the user is aware of that.
-    if (message instanceof LocationMessage) {
-        bot.onLocationMessage(message, response);
-    } else {
-        if (!(message instanceof TextMessage)) {
-            say(response, `Извините, я вас не понимаю`);
+    try {
+        //This sample bot can answer only text messages, let's make sure the user is aware of that.
+        if (message instanceof LocationMessage) {
+            bot.onLocationMessage(message, response);
+        } else {
+            if (!(message instanceof TextMessage)) {
+                say(response, `Извините, я вас не понимаю`);
+            }
         }
+    } catch (e) {
+        logger.debug(e);
     }
 });
 
@@ -105,136 +109,160 @@ bot.onTextMessage(/./, (message, response) => {
     }
 });
 
-function near(project_id, message, response){
-    request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
-        if (err) {
-            return console.log(err);
-        }
-        if (body._type == 'error') {
-            let msg = new TextMessage('Произошла какая-то ошибка... Попробуйте еще раз');
-            response.send(msg);
-        }
+function near(project_id, message, response) {
+    try {
+        request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
+            try {
+                if (err) {
+                    return console.log(err);
+                }
+                if (body._type == 'error') {
+                    let msg = new TextMessage('Произошла какая-то ошибка... Попробуйте еще раз');
+                    response.send(msg);
+                }
 
-        //console.log(body);
-        logger.log(body);
-        let wps = body._embedded.elements;
-        var text = '';
-        for (var w in wps) {
-            let due_date = new Date(wps[w].dueDate);
-            let now = new Date(Date.now());
-            const diffTime = due_date.getTime() - now.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays <= 14 && diffDays >= 0 && (wps[w]._links.status.title == 'Не начат'
-                || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
-                text += "\u23f3"
-                    + " " + wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
-                    + " Ответственный: " + wps[w]._links.assignee.title + '\n'
-                    + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
+                //console.log(body);
+                logger.log(body);
+                let wps = body._embedded.elements;
+                var text = '';
+                for (var w in wps) {
+                    let due_date = new Date(wps[w].dueDate);
+                    let now = new Date(Date.now());
+                    const diffTime = due_date.getTime() - now.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays <= 14 && diffDays >= 0 && (wps[w]._links.status.title == 'Не начат'
+                        || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
+                        text += "\u23f3"
+                            + " " + wps[w].subject + '. Осталось ' + diffDays + ' дней\n'
+                            + " Ответственный: " + wps[w]._links.assignee.title + '\n'
+                            + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
+                    }
+                }
+                if (isEmpty(text)) {
+                    text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
+                }
+
+                var buttons = [];
+                buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
+                buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
+                buttons.push(build_button('Главное меню', 'MAIN'));
+                var keyboard = build_keyboard(buttons);
+
+                let msg = new TextMessage(text, keyboard);
+                response.send(msg);
+            } catch (e) {
+                logger.debug(e);
             }
-        }
-        if (isEmpty(text)) {
-            text = '\u2705' + 'В ближайшее время сроков исполнения мероприятий и КТ нет';
-        }
-
-        var buttons = [];
-        buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
-        buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
-        buttons.push(build_button('Главное меню', 'MAIN'));
-        var keyboard = build_keyboard(buttons);
-
-        let msg = new TextMessage(text, keyboard);
-        response.send(msg);
-    });
+        });
+    } catch (e) {
+        logger.debug(e);
+    }
 }
 
-function prosr(project_id, message, response){
-    request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
-        if (err) {
-            return console.log(err);
-        }
-        if (body._type == 'error') {
-            let msg = new TextMessage('Произошла какая-то ошибка... Попробуйте еще раз');
-            response.send(msg);
-        }
+function prosr(project_id, message, response) {
+    try {
+        request(head_url + apikey + '@' + projects_url + '/' + project_id + '/' + wp_url, {json: true}, (err, res, body) => {
+            try {
+                if (err) {
+                    return console.log(err);
+                }
+                if (body._type == 'error') {
+                    let msg = new TextMessage('Произошла какая-то ошибка... Попробуйте еще раз');
+                    response.send(msg);
+                }
 
-        //console.log(body);
-        let wps = body._embedded.elements;
-        var text = '';
-        for (var w in wps) {
-            let due_date = new Date(wps[w].dueDate);
-            if (due_date < Date.now() && (wps[w]._links.status.title == 'Не начат'
-                || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
-                text += "\ud83d\udd34"
-                    + " " + wps[w].subject + ' Просрочено \n'
-                    + " Ответственный: " + wps[w]._links.assignee.title + '\n'
-                    + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
+                //console.log(body);
+                let wps = body._embedded.elements;
+                var text = '';
+                for (var w in wps) {
+                    let due_date = new Date(wps[w].dueDate);
+                    if (due_date < Date.now() && (wps[w]._links.status.title == 'Не начат'
+                        || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
+                        text += "\ud83d\udd34"
+                            + " " + wps[w].subject + ' Просрочено \n'
+                            + " Ответственный: " + wps[w]._links.assignee.title + '\n'
+                            + ' Cрок исполнения: ' + wps[w].dueDate + '\n';
+                    }
+                }
+                if (isEmpty(text)) {
+                    text = '\u2705' + 'Просроченные КТ и мероприятия отсутствуют';
+                }
+
+                var buttons = [];
+                buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
+                buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
+                buttons.push(build_button('Главное меню', 'MAIN'));
+                var keyboard = build_keyboard(buttons);
+
+                let msg = new TextMessage(text, keyboard);
+                response.send(msg);
+            } catch (e) {
+                logger.debug(e);
             }
-        }
-        if (isEmpty(text)) {
-            text = '\u2705' + 'Просроченные КТ и мероприятия отсутствуют';
-        }
-
-        var buttons = [];
-        buttons.push(build_button('Просроченные КТ', WP_PROSR + ',' + project_id, '#DC143C'));
-        buttons.push(build_button('В ближайшие 2 недели', WP_NEAR + ',' + project_id, '#FFA500'));
-        buttons.push(build_button('Главное меню', 'MAIN'));
-        var keyboard = build_keyboard(buttons);
-
-        let msg = new TextMessage(text, keyboard);
-        response.send(msg);
-    });
+        });
+    } catch (e) {
+        logger.debug(e);
+    }
 }
 
-function main_menu(message, response){
-    request(head_url + apikey + '@' + projects_url, {json: true}, (err, res, body) => {
-        if (err) {
-            return console.log(err);
-        }
-        let projects = body._embedded.elements;
-
-        var buttons = []
-        for (var p in projects) {
-            var bgColor = '#228B22';
-
-            let res = sync_request('GET', head_url + apikey + '@' + projects_url + '/' + projects[p].id + '/' + wp_url, {json: true});
-            let result = JSON.parse(res.getBody('utf8'));
-
-
-            let wps = result._embedded.elements;
-            var text = '';
-            let prosrc = 0;
-            let nearc = 0;
-            for (var w in wps) {
-                let due_date = new Date(wps[w].dueDate);
-                let now = new Date(Date.now());
-                const diffTime = due_date.getTime() - now.getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (due_date < Date.now() && (wps[w]._links.status.title == 'Не начат'
-                    || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
-                    prosrc++;
-                    break;
+function main_menu(message, response) {
+    try {
+        request(head_url + apikey + '@' + projects_url, {json: true}, (err, res, body) => {
+            try {
+                if (err) {
+                    return console.log(err);
                 }
-                if (diffDays <= 14 && diffDays >= 0 && (wps[w]._links.status.title == 'Не начат'
-                    || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
-                    nearc++;
+                let projects = body._embedded.elements;
+
+                var buttons = []
+                for (var p in projects) {
+                    var bgColor = '#228B22';
+
+                    let res = sync_request('GET', head_url + apikey + '@' + projects_url + '/' + projects[p].id + '/' + wp_url, {json: true});
+                    let result = JSON.parse(res.getBody('utf8'));
+
+
+                    let wps = result._embedded.elements;
+                    var text = '';
+                    let prosrc = 0;
+                    let nearc = 0;
+                    for (var w in wps) {
+                        let due_date = new Date(wps[w].dueDate);
+                        let now = new Date(Date.now());
+                        const diffTime = due_date.getTime() - now.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (due_date < Date.now() && (wps[w]._links.status.title == 'Не начат'
+                            || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
+                            prosrc++;
+                            break;
+                        }
+                        if (diffDays <= 14 && diffDays >= 0 && (wps[w]._links.status.title == 'Не начат'
+                            || wps[w]._links.status.title == 'В работе' || wps[w]._links.status.title == 'На проверке')) {
+                            nearc++;
+                        }
+                    }
+                    if (prosrc > 0) {
+                        bgColor = '#DC143C';
+                    } else if (nearc > 0) {
+                        bgColor = '#FFA500';
+                    }
+
+                    buttons.push(build_button(projects[p].name, VIEW_PROJECT + ',' + projects[p].id, bgColor));
+                    logger.log(projects[p].name + ' ' + bgColor);
                 }
+
+                var keyboard = build_keyboard(buttons);
+
+                let msg = new TextMessage("Выберите проект", keyboard);
+                response.send(msg);
+                //console.log(body);
+            } catch (e) {
+                logger.debug(e);
             }
-            if (prosrc > 0){
-                bgColor = '#DC143C';
-            }else if (nearc > 0){
-                bgColor = '#FFA500';
-            }
-
-            buttons.push(build_button(projects[p].name, VIEW_PROJECT + ',' + projects[p].id, bgColor));
-            logger.log(projects[p].name + ' ' + bgColor);
-        }
-
-        var keyboard = build_keyboard(buttons);
-
-        let msg = new TextMessage("Выберите проект", keyboard);
-        response.send(msg);
-        //console.log(body);
-    });
+        });
+    } catch (e) {
+        logger.debug(e);
+    }
 }
 
 bot.onConversationStarted((userProfile, isSubscribed, context, onFinish) => onFinish(
